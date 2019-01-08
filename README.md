@@ -1,6 +1,6 @@
 # Parallel quicksort
 
-A quick port of https://easyprog.app/blog/sort_par.html
+A quick port of https://easyprog.app/blog/sort_par.html to Rust
 
 
 ```
