@@ -74,6 +74,8 @@ where
 
 pub trait QSort<T> {
     fn qsort(&mut self);
+
+    fn is_sorted(&self) -> bool;
 }
 
 impl<T> QSort<T> for [T]
@@ -82,6 +84,10 @@ where
 {
     fn qsort(&mut self) {
         quick_sort(self, &|a: &T, b: &T| a.lt(b));
+    }
+
+    fn is_sorted(&self) -> bool {
+        self.windows(2).all(|w| w[0] <= w[1])
     }
 }
 
@@ -115,6 +121,7 @@ fn main() {
     );
     data.qsort();
     println!("Time: {:.2?}", start.elapsed());
+    assert!(data.is_sorted());
 
     let mut data = orig.clone();
     let start = Instant::now();
@@ -124,6 +131,7 @@ fn main() {
     );
     data.sort_unstable();
     println!("Time: {:.2?}", start.elapsed());
+    assert!(data.is_sorted());
 
     let mut data = orig.clone();
     let start = Instant::now();
@@ -133,6 +141,7 @@ fn main() {
     );
     data.par_qsort();
     println!("Time: {:.2?}", start.elapsed());
+    assert!(data.is_sorted());
 
     let mut data = orig.clone();
     let start = Instant::now();
@@ -142,6 +151,7 @@ fn main() {
     );
     data.par_sort_unstable();
     println!("Time: {:.2?}", start.elapsed());
+    assert!(data.is_sorted());
 }
 
 #[cfg(test)]
