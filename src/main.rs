@@ -59,8 +59,10 @@ where
         let (left, right) = d.split_at_mut(mid);
 
         if right.len() > 100_000 {
-            join(|| par_quick_sort(left, is_less),
-                 || par_quick_sort(right, is_less));
+            join(
+                || par_quick_sort(left, is_less),
+                || par_quick_sort(right, is_less),
+            );
         } else {
             quick_sort(left, is_less);
             quick_sort(right, is_less);
@@ -70,10 +72,20 @@ where
     }
 }
 
-pub trait ParQSort<T>
+pub trait QSort<T> {
+    fn qsort(&mut self);
+}
+
+impl<T> QSort<T> for [T]
 where
-    T: Ord + Send,
+    T: Ord,
 {
+    fn qsort(&mut self) {
+        quick_sort(self, &|a: &T, b: &T| a.lt(b));
+    }
+}
+
+pub trait ParQSort<T> {
     fn par_qsort(&mut self);
 }
 
@@ -81,33 +93,53 @@ impl<T> ParQSort<T> for [T]
 where
     T: Ord + Send,
 {
-    fn par_qsort(&mut self)
-    where
-        T: Ord + Send,
-    {
+    fn par_qsort(&mut self) {
         par_quick_sort(self, &|a: &T, b: &T| a.lt(b));
     }
 }
 
 use rand::{thread_rng, Rng};
-use std::time::Instant;
 use rayon::prelude::*;
+use std::time::Instant;
 
 fn main() {
     let len = 50_000_000;
-    let mut data: Vec<u32> = vec![0; len];
-    thread_rng().fill(&mut data[..]);
+    let mut orig: Vec<u32> = vec![0; len];
+    thread_rng().fill(&mut orig[..]);
 
-    let orig = data.clone();
-
+    let mut data = orig.clone();
     let start = Instant::now();
-    println!("Sorting {} million numbers with Quicksort in Rust", len / 1_000_000);
+    println!(
+        "Sorting {} million numbers with naive quicksort in Rust ...",
+        len / 1_000_000
+    );
+    data.qsort();
+    println!("Time: {:.2?}", start.elapsed());
+
+    let mut data = orig.clone();
+    let start = Instant::now();
+    println!(
+        "Sorting {} million numbers with stdlib quicksort in Rust ...",
+        len / 1_000_000
+    );
+    data.sort_unstable();
+    println!("Time: {:.2?}", start.elapsed());
+
+    let mut data = orig.clone();
+    let start = Instant::now();
+    println!(
+        "Sorting {} million numbers with naive parallel quicksort in Rust ...",
+        len / 1_000_000
+    );
     data.par_qsort();
     println!("Time: {:.2?}", start.elapsed());
 
-    let mut data = orig;
+    let mut data = orig.clone();
     let start = Instant::now();
-    println!("Sorting {} million numbers with Rayon in Rust", len / 1_000_000);
+    println!(
+        "Sorting {} million numbers with Rayon parallel quicksort in Rust ...",
+        len / 1_000_000
+    );
     data.par_sort_unstable();
     println!("Time: {:.2?}", start.elapsed());
 }
