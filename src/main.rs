@@ -116,45 +116,25 @@ fn main() {
         .take(len)
         .collect();
 
-    println!(
-        "Sorting {} million numbers with naive quicksort in Rust ...",
-        len / 1_000_000
-    );
-    let mut data = orig.clone();
-    let start = Instant::now();
-    data.qsort();
-    println!("Time: {:.2?}", start.elapsed());
-    assert!(data.is_sorted());
+    macro_rules! test_sort {
+        ($name:expr, $sort:ident) => {
+            println!(
+                "Sorting {} million numbers with {} in Rust ...",
+                len / 1_000_000,
+                $name
+            );
+            let mut data = orig.clone();
+            let start = Instant::now();
+            data.$sort();
+            println!("Time: {:.2?}", start.elapsed());
+            assert!(data.is_sorted());
+        }
+    }
 
-    println!(
-        "Sorting {} million numbers with stdlib quicksort in Rust ...",
-        len / 1_000_000
-    );
-    let mut data = orig.clone();
-    let start = Instant::now();
-    data.sort_unstable();
-    println!("Time: {:.2?}", start.elapsed());
-    assert!(data.is_sorted());
-
-    println!(
-        "Sorting {} million numbers with naive parallel quicksort in Rust ...",
-        len / 1_000_000
-    );
-    let mut data = orig.clone();
-    let start = Instant::now();
-    data.par_qsort();
-    println!("Time: {:.2?}", start.elapsed());
-    assert!(data.is_sorted());
-
-    println!(
-        "Sorting {} million numbers with Rayon parallel quicksort in Rust ...",
-        len / 1_000_000
-    );
-    let mut data = orig.clone();
-    let start = Instant::now();
-    data.par_sort_unstable();
-    println!("Time: {:.2?}", start.elapsed());
-    assert!(data.is_sorted());
+    test_sort!("naive quicksort", qsort);
+    test_sort!("stdlib quicksort", sort_unstable);
+    test_sort!("naive parallel quicksort", par_qsort);
+    test_sort!("Rayon quicksort", par_sort_unstable);
 }
 
 #[cfg(test)]
