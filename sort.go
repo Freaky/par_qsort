@@ -1,3 +1,5 @@
+// Taken without permission from https://easyprog.app/blog/sort_par.html
+
 package main
 import (
     "fmt"
